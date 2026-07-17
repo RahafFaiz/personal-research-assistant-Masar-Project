@@ -40,19 +40,28 @@ async def file_exists(path: str) -> bool:
 
 
 async def save(path: str, content: str) -> AgentResult:
-    tool = (await _tools()).get("write_file")
-    if tool is None:
-        return AgentResult(status=ResponseStatus.ERROR, error="write_file tool unavailable")
-    
-    try:
-        abs_path = _resolve_path(path)
-        # Create parent directories to prevent "directory not found" errors
-        abs_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        await tool.ainvoke({"path": str(abs_path), "content": content})
-    except Exception as e:
-        logger.error("Workspace save failed: %s", e)
-        return AgentResult(status=ResponseStatus.ERROR, error=str(e))
+    abs_path = _resolve_path(path)
+    abs_path.parent.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Report saved to %s", path)
-    return AgentResult(content=f"Report saved to {path}")
+    # Try MCP tool first; fall back to direct Python write if unavailable (e.g. no Node.js)
+    try:
+        tool = (await _tools()).get("write_file")
+    except Exception:
+        tool = None
+
+    if tool is not None:
+        try:
+            await tool.ainvoke({"path": str(abs_path), "content": content})
+            logger.info("Report saved via MCP to %s", path)
+            return AgentResult(content=f"Report saved to {path}")
+        except Exception as e:
+            logger.warning("MCP save failed (%s), falling back to direct write", e)
+
+    # Direct Python fallback
+    try:
+        abs_path.write_text(content, encoding="utf-8")
+        logger.info("Report saved directly to %s", abs_path)
+        return AgentResult(content=f"Report saved to {path}")
+    except Exception as e:
+        logger.error("Direct write failed: %s", e)
+        return AgentResult(status=ResponseStatus.ERROR, error=str(e))
