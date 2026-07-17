@@ -1,0 +1,31 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# ---- Secrets ----
+.env
+
+# ---- Generated knowledge index ----
+knowledge/vector_store/
+
+# ---- Generated workspace output (keep the folder, ignore contents) ----
+workspace/reports/*
+!workspace/reports/.gitkeep
+
+# ---- Model / HF caches ----
+.cache/
+*.safetensors
+
+# ---- Notebooks ----
+.ipynb_checkpoints/
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

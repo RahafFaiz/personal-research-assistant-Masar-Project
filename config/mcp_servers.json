@@ -1,0 +1,14 @@
+{
+  "_comment": "MCP server launch config. The Workspace Agent connects to the Filesystem MCP server, sandboxed to the project's workspace/ directory. The <WORKSPACE_DIR> placeholder is resolved to an absolute path at runtime by src/mcp_clients.py. Requires Node.js + npx on PATH.",
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "<WORKSPACE_DIR>"
+      ],
+      "transport": "stdio"
+    }
+  }
+}
