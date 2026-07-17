@@ -87,7 +87,12 @@ async def _stream_graph(prompt: str, thread_id: str) -> str:
             chunk, meta = data
             node = meta.get("langgraph_node", "")
             if node == "general_assistant" and hasattr(chunk, "content") and chunk.content:
-                full_reply += chunk.content
+                if chunk.__class__.__name__ == "AIMessageChunk":
+                    full_reply += chunk.content
+                else:
+                    # It's a full AIMessage (either from LLM callback or state update)
+                    # Overwrite instead of appending to avoid duplication
+                    full_reply = chunk.content
                 stream_box.markdown(full_reply + " ▮")   # live cursor effect
 
     status_box.empty()
